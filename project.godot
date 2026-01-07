@@ -13,7 +13,7 @@ config_version=5
 config/name="Radial Blur Demo"
 run/main_scene="uid://gq10y0ecckqf"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="uid://of8lgj555ibo"
+config/icon="res://assets/icon.png"
 
 [display]
 
