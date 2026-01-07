@@ -1,0 +1,270 @@
+[gd_scene format=3 uid="uid://gq10y0ecckqf"]
+
+[ext_resource type="Script" uid="uid://dxqyjyacgyo1q" path="res://free_camera.gd" id="1_f3sb7"]
+[ext_resource type="PackedScene" uid="uid://c1t1ptcxlfy6s" path="res://map.tscn" id="12_h8lre"]
+[ext_resource type="Shader" uid="uid://du31jwuiac01w" path="res://assets/radial_blur.gdshader" id="13_2o6r5"]
+
+[sub_resource type="GDScript" id="GDScript_aqk2v"]
+resource_name = "world"
+script/source = "extends Node3D
+
+@export var ui: CanvasLayer
+
+var fullscreen: bool = false
+
+func _input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed(\"rmb\"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
+	if Input.is_action_just_pressed(\"f11\"):
+		fullscreen = not fullscreen
+		
+		if fullscreen:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		else:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+	
+	if Input.is_action_just_pressed(\"f1\"):
+		ui.visible = not ui.visible
+
+func _on_mouse_capturer_button_down() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_70uel"]
+shader = ExtResource("13_2o6r5")
+shader_parameter/intensity = 1.0
+shader_parameter/falloff = 0.5
+shader_parameter/samples = 32
+shader_parameter/center = Vector2(0.5, 0.5)
+
+[sub_resource type="GDScript" id="GDScript_dwbse"]
+resource_name = "radial_blur"
+script/source = "extends ColorRect
+
+func _input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed(\"f\"):
+		visible = not visible
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8lre"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="GDScript" id="GDScript_tlwt5"]
+resource_name = "samples"
+script/source = "extends VBoxContainer
+
+@export var samples_label: Label
+@export var radial_blur: ColorRect
+
+func _on_samples_slider_value_changed(value: float) -> void:
+	var samples: int = int(value)
+	
+	samples_label.text = \"Samples: \" + str(samples)
+	radial_blur.material.set_shader_parameter(\"samples\", samples)
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_70uel"]
+font_size = 20
+outline_size = 10
+outline_color = Color(0, 0, 0, 1)
+
+[sub_resource type="GDScript" id="GDScript_036b0"]
+resource_name = "fps"
+script/source = "extends Label
+
+func _ready() -> void:
+	visible = false
+
+func _input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed(\"f3\"):
+		visible = not visible
+
+func _process(_delta: float) -> void:
+	text = \"FPS: \" + str(int(Engine.get_frames_per_second()))
+"
+
+[node name="World" type="Node3D" unique_id=1833478962 node_paths=PackedStringArray("ui")]
+script = SubResource("GDScript_aqk2v")
+ui = NodePath("UI")
+
+[node name="Map" parent="." unique_id=491079925 instance=ExtResource("12_h8lre")]
+
+[node name="FreeCamera" type="Camera3D" parent="." unique_id=2042015269 node_paths=PackedStringArray("radial_blur")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+fov = 90.0
+script = ExtResource("1_f3sb7")
+radial_blur = NodePath("../RadialBlur")
+
+[node name="RadialBlur" type="ColorRect" parent="." unique_id=2067781109]
+material = SubResource("ShaderMaterial_70uel")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_dwbse")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=642846194]
+
+[node name="MouseCapturer" type="Button" parent="UI" unique_id=527024667]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"FlatButton"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_h8lre")
+
+[node name="Panel" type="Panel" parent="UI" unique_id=167892622]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -165.0
+offset_top = -162.0
+offset_right = 165.0
+offset_bottom = -100.00018
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Samples" type="VBoxContainer" parent="UI" unique_id=2039250437 node_paths=PackedStringArray("samples_label", "radial_blur")]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -157.0
+offset_right = 160.0
+offset_bottom = -105.0
+grow_horizontal = 2
+grow_vertical = 0
+script = SubResource("GDScript_tlwt5")
+samples_label = NodePath("SamplesLabel")
+radial_blur = NodePath("../../RadialBlur")
+
+[node name="SamplesLabel" type="Label" parent="UI/Samples" unique_id=2015231734]
+layout_mode = 2
+text = "Samples: 32"
+label_settings = SubResource("LabelSettings_70uel")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SamplesSlider" type="HSlider" parent="UI/Samples" unique_id=1302690868]
+layout_mode = 2
+max_value = 64.0
+value = 32.0
+rounded = true
+
+[node name="Panel2" type="Panel" parent="UI" unique_id=559122725]
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 248.0
+offset_bottom = 491.0
+
+[node name="Help" type="VBoxContainer" parent="UI" unique_id=1639094454]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 243.0
+offset_bottom = 486.0
+
+[node name="CaptureMouse" type="Label" parent="UI/Help" unique_id=1298516181]
+layout_mode = 2
+text = "Capture Mouse: LMB"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="ShowMouse" type="Label" parent="UI/Help" unique_id=1709202091]
+layout_mode = 2
+text = "Show Mouse: RMB"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="Space" type="Label" parent="UI/Help" unique_id=22378353]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="Fullscreen" type="Label" parent="UI/Help" unique_id=1222982511]
+layout_mode = 2
+text = "Fullscreen: F11"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="ShowFPS" type="Label" parent="UI/Help" unique_id=328167262]
+layout_mode = 2
+text = "Show FPS: F3"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="HideUI" type="Label" parent="UI/Help" unique_id=733433218]
+layout_mode = 2
+text = "Hide UI: F1"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="Space2" type="Label" parent="UI/Help" unique_id=1297506862]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="RadialBlur" type="Label" parent="UI/Help" unique_id=1121664738]
+layout_mode = 2
+text = "Radial Blur: F"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="Space3" type="Label" parent="UI/Help" unique_id=1678414765]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="LookAround" type="Label" parent="UI/Help" unique_id=415373580]
+layout_mode = 2
+text = "Look Around: Mouse"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="Move" type="Label" parent="UI/Help" unique_id=792261414]
+layout_mode = 2
+text = "Move: WASD"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="AscendDescend" type="Label" parent="UI/Help" unique_id=19489356]
+layout_mode = 2
+text = "Ascend | Descend: Q | E"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="MoveSpeed" type="Label" parent="UI/Help" unique_id=1895752546]
+layout_mode = 2
+text = "Move Speed: Scroll"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="SpeedUp" type="Label" parent="UI/Help" unique_id=1347946203]
+layout_mode = 2
+text = "Speed Up: Shift"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="SlowDown" type="Label" parent="UI/Help" unique_id=570209504]
+layout_mode = 2
+text = "Slow Down: Alt"
+label_settings = SubResource("LabelSettings_70uel")
+
+[node name="FPS" type="Label" parent="." unique_id=1664559916]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -73.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = 33.0
+grow_horizontal = 0
+text = "FPS: 60"
+label_settings = SubResource("LabelSettings_70uel")
+horizontal_alignment = 2
+vertical_alignment = 1
+script = SubResource("GDScript_036b0")
+
+[connection signal="button_down" from="UI/MouseCapturer" to="." method="_on_mouse_capturer_button_down"]
+[connection signal="value_changed" from="UI/Samples/SamplesSlider" to="UI/Samples" method="_on_samples_slider_value_changed"]

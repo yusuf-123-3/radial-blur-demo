@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ceebwmixdjspm"]
+
+[ext_resource type="Texture2D" uid="uid://bmjd0bn6d5o8i" path="res://assets/purple_texture.png" id="1_4rxmp"]
+
+[resource]
+albedo_texture = ExtResource("1_4rxmp")
+uv1_scale = Vector3(0.03, 0.03, 0.03)
+uv1_triplanar = true
+texture_filter = 5
