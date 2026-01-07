@@ -107,6 +107,6 @@ func set_radial_blur_parameters():
 	#print("Falloff: ", falloff)
 	#print("Center: ", center * 2.0)
 	
-	#radial_blur.material.set_shader_parameter("intensity", intensity)
-	#radial_blur.material.set_shader_parameter("falloff", falloff)
+	radial_blur.material.set_shader_parameter("intensity", intensity)
+	radial_blur.material.set_shader_parameter("falloff", falloff)
 	radial_blur.material.set_shader_parameter("center", center)
